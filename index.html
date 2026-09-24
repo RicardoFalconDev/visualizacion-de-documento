@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Revisá el documento · FID</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Open+Sans:wght@600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="signer" aria-labelledby="signer-title">
+      <div class="card">
+        <!-- El título ya no se muestra en el diseño; se mantiene para lectores de pantalla -->
+        <h1 id="signer-title" class="sr-only">Revisá el documento</h1>
+
+        <div class="viewer">
+          <!-- Progreso de lectura -->
+          <div class="viewer__header">
+            <div class="progress" id="progress" data-state="sin-leer">
+              <div class="progress__row">
+                <div class="progress__message">
+                  <img class="progress__icon progress__icon--article" src="assets/icon-article.svg" alt="" width="16" height="16" />
+                  <img class="progress__icon progress__icon--check" src="assets/icon-check.svg" alt="" width="24" height="24" />
+                  <p class="progress__label" id="progress-label">Revisá el documento para habilitar la firma</p>
+                </div>
+                <p class="progress__count" id="progress-count">0 de 2 páginas</p>
+              </div>
+              <div class="progress__bar" id="progress-bar" aria-hidden="true"></div>
+            </div>
+          </div>
+
+          <!-- Documento -->
+          <div class="viewer__body">
+            <div class="viewer__scroll" id="scroll" tabindex="0" aria-label="Documento: Autorización para retiro de pertenencias">
+              <div class="viewer__pages" id="pages">
+                <article class="doc-page" data-page="1" aria-label="Página 1 de 2">
+                  <img src="assets/pagina-1.jpg" alt="Autorización para retiro de pertenencias. Autorizante: Ana María Torres Soto, DNI 45.876.123. Autorizado: Ricardo Gómez Pérez, DNI 18.345.678. Válida del 16 al 30 de abril de 2026." />
+                </article>
+                <!-- La página 2 no existe en el diseño: se maqueta en HTML con el mismo estilo del documento -->
+                <article class="doc-page doc-page--html" data-page="2" aria-label="Página 2 de 2">
+                  <div class="doc-page__content">
+                    <h2>Anexo I · Detalle de pertenencias</h2>
+                    <p>Por medio del presente se detallan las pertenencias que el autorizado podrá retirar en mi nombre durante el período de validez de esta autorización.</p>
+                    <ol>
+                      <li>Documentación personal en sobre cerrado.</li>
+                      <li>Notebook marca Lenovo, modelo ThinkPad E14, con cargador.</li>
+                      <li>Dos cajas con libros y material de estudio.</li>
+                      <li>Llaves del locker n.º <strong>214</strong>.</li>
+                    </ol>
+                    <p>El autorizado deberá presentar su documento de identidad original al momento del retiro. Cualquier pertenencia no incluida en este anexo no podrá ser entregada.</p>
+                    <p>Ante cualquier inconveniente, comunicarse al <strong>(11) 4567-8901</strong> o a <strong>ana.torres@mailfalso.com</strong>.</p>
+                    <p class="doc-page__sign">Buenos Aires, <strong>16 de Abril de 2026</strong>.</p>
+                  </div>
+                </article>
+              </div>
+            </div>
+
+            <div class="scrollbar" id="scrollbar" aria-hidden="true">
+              <div class="scrollbar__thumb" id="scrollbar-thumb"></div>
+            </div>
+
+            <button type="button" class="chip" id="chip">
+              <span>Ir al final del documento</span>
+              <img src="assets/icon-arrow-downward.svg" alt="" width="16" height="16" />
+            </button>
+          </div>
+
+          <!-- Controles -->
+          <div class="viewer__toolbar">
+            <div class="toolbar-group">
+              <button type="button" class="icon-btn" id="zoom-out" aria-label="Alejar"><img src="assets/icon-remove.svg" alt="" /></button>
+              <output class="toolbar-value" id="zoom-value" aria-live="polite">100%</output>
+              <button type="button" class="icon-btn" id="zoom-in" aria-label="Acercar"><img src="assets/icon-add.svg" alt="" /></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn--outline" id="btn-reject">Rechazar documento</button>
+          <div class="sign-wrap">
+            <button type="button" class="btn btn--primary" id="btn-sign" aria-disabled="true" aria-describedby="tooltip">Firmar documento</button>
+            <div class="tooltip" id="tooltip" role="tooltip">
+              <div class="tooltip__body">
+                <img src="assets/icon-lock.svg" alt="" width="16" height="16" />
+                <div class="tooltip__text">
+                  <p class="tooltip__title">Para firmar, hacé scroll hasta el final del documento</p>
+                  <p class="tooltip__detail" id="tooltip-detail">Te falta revisar 2 páginas.</p>
+                </div>
+              </div>
+              <img class="tooltip__arrow" src="assets/tooltip-arrow.svg" alt="" width="12" height="6" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="card-footer">
+        <span class="card-footer__label">POWERED BY</span>
+        <span class="fid-logo" role="img" aria-label="FID by Lakaut">
+          <img class="fid-logo__a" src="assets/fid-logo-1.svg" alt="" />
+          <img class="fid-logo__b" src="assets/fid-logo-2.svg" alt="" />
+          <img class="fid-logo__c" src="assets/fid-logo-3.svg" alt="" />
+        </span>
+      </footer>
+    </section>
+
+    <p class="sr-only" id="live" aria-live="polite"></p>
+    <div class="toast" id="toast" role="status"></div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
