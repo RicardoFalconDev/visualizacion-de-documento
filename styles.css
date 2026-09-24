@@ -431,20 +431,41 @@ button { font: inherit; }
 }
 .toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
 
-/* Mobile (referencia: frame de 360 px) */
+/* Mobile: frames "mobile" de 360 px en Figma (sección "Propuesta prototipo") */
 @media (max-width: 640px) {
-  :root { --viewport-h: 60vh; }
   .page { padding: 16px; }
-  .card { padding: 24px 16px 16px; }
-  .viewer__scroll { padding: 12px 28px 12px 12px; }
-  .doc-page { width: calc(min(var(--page-width), 100vw - 104px) * var(--zoom, 1)); }
-  .scrollbar { top: 12px; right: 6px; height: calc(var(--viewport-h) - 24px); }
-  .progress__row { align-items: flex-start; }
-  .actions { flex-direction: column-reverse; gap: 12px; }
+  .card { padding: 16px 16px 24px; }
+
+  /* Indicador: sin ícono de documento, texto de 12 px que puede ir en dos líneas */
+  .viewer__header { padding: 12px 8px 13px 13.33px; }
+  .progress__row { gap: 8px; }
+  .progress__message { flex: 1; gap: 4px; align-items: flex-start; }
+  .progress__label { font-size: 12px; }
+  .progress__icon--article { display: none; }
+  /* Check de 16 px dentro de la línea de texto: la segunda línea arranca debajo del
+     ícono (como en Figma), así el texto queda en dos líneas y el indicador no crece. */
+  .progress[data-state="completo"] .progress__message { display: block; position: relative; }
+  .progress[data-state="completo"] .progress__icon--check {
+    position: absolute; top: 1px; left: 0; width: 16px; height: 16px; margin: 0;
+  }
+  .progress[data-state="completo"] .progress__label { text-indent: 20px; }
+
+  /* Documento: página de 264 px en 360 px de ancho */
+  .viewer__scroll { padding: 16px 16px 16px 8px; }
+  .doc-page { width: calc(min(var(--page-width), 100vw - 96px) * var(--zoom, 1)); border-width: .381px; }
+  .scrollbar { top: 16px; right: 5px; width: 12px; padding: 2px; height: calc(var(--viewport-h) - 32px); }
+  .chip { bottom: 10px; }
+  .viewer__toolbar { padding: 9px 16px 8px; }
+
+  /* Botones apilados: primero "Firmar documento" */
+  .actions { flex-direction: column-reverse; gap: 8px; }
   .sign-wrap { width: 100%; }
   .btn--outline { flex: none; }
+
+  /* Tooltip a todo el ancho, flecha al centro del botón */
   .tooltip { left: 0; align-items: center; }
-  .tooltip__body { white-space: normal; }
+  .tooltip__body { width: 100%; gap: 4px; padding: 10px 8px; white-space: normal; }
+  .tooltip__title { font-size: 12px; }
   .tooltip__arrow { margin-right: 0; }
 }
 

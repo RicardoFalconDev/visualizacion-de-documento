@@ -2,9 +2,9 @@
  * Visor "Revisá el documento" — lectura requerida antes de firmar.
  *
  * Comportamiento (según las notas del diseño en Figma):
- * - Un segmento del indicador por página. Una página cuenta como revisada cuando
- *   la persona pasa su final (asoma la siguiente); la última, al llegar al final.
- *   El progreso nunca retrocede.
+ * - Un segmento del indicador por página, que se llena con el scroll según la parte
+ *   del recorrido que le toca a esa página. Al completarse, la página cuenta como
+ *   revisada; la última, al llegar al final. El progreso nunca retrocede.
  * - Si el documento entra completo en pantalla al cargar, se marca como revisado.
  * - Chip "Ir al final del documento": scroll suave hasta el final; se oculta al completar.
  * - "Firmar documento" usa aria-disabled hasta completar la lectura. Hover, foco o
@@ -113,43 +113,40 @@
 
   /* ---------- Seguimiento de lectura ---------- */
 
+  // Cada segmento representa la parte del recorrido total que le corresponde a su
+  // página (según su alto): con 2 páginas, la 1 se llena del 0 al 50 % del scroll
+  // y la 2 del 50 al 100 %. La página cuenta como revisada cuando su segmento se
+  // completa, así la barra y el contador nunca se contradicen, sin importar el alto
+  // del visor ni el zoom.
   function checkReviewed() {
+    const maxScroll = scroll.scrollHeight - scroll.clientHeight;
     // Documento que entra completo en pantalla: se marca como revisado de inmediato
-    if (scroll.scrollHeight <= scroll.clientHeight + 2) {
+    if (maxScroll <= 2) {
       pages.forEach((_, i) => markReviewed(i + 1));
       return;
     }
-    updateFills();
-    const view = scroll.getBoundingClientRect();
-    // Una página cuenta como revisada cuando la persona pasó su final: su borde
-    // inferior está visible y ya asoma la página siguiente. (Con 100 % de zoom la
-    // página 1 entra completa en el visor, así que su borde inferior solo no alcanza.)
-    pages.slice(0, -1).forEach((page, i) => {
-      const next = pages[i + 1].getBoundingClientRect();
-      if (page.getBoundingClientRect().bottom <= view.bottom && next.top < view.bottom - 1) markReviewed(i + 1);
-    });
-    // La última página cuenta al llegar al final del scroll
-    if (scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight - 2) markReviewed(total);
-  }
-
-  // Llenado gradual: cada segmento avanza desde que su página entra por abajo del
-  // visor hasta el punto en que cuenta como revisada (asoma la siguiente página o,
-  // en la última, se llega al final del scroll).
-  function updateFills() {
-    const viewH = scroll.clientHeight;
-    const maxScroll = scroll.scrollHeight - viewH;
-    const pos = scroll.scrollTop;
-    pages.forEach((page, i) => {
-      const start = Math.max(0, page.offsetTop - viewH);
-      const end = i < total - 1 ? pages[i + 1].offsetTop - viewH : maxScroll;
-      setFill(i, end > start ? (pos - start) / (end - start) : pos >= end ? 1 : 0);
+    const atEnd = scroll.scrollTop >= maxScroll - 2;
+    const progressTotal = atEnd ? 1 : scroll.scrollTop / maxScroll;
+    const heights = pages.map((page) => page.offsetHeight);
+    const totalH = heights.reduce((a, b) => a + b, 0);
+    let before = 0;
+    heights.forEach((h, i) => {
+      setFill(i, (progressTotal * totalH - before) / h);
+      if (pageFill[i] >= 1) markReviewed(i + 1);
+      before += h;
     });
   }
 
   /* ---------- Scrollbar personalizada ---------- */
 
+  // Padding vertical del riel (4 + 4 px en desktop, 2 + 2 px en mobile)
+  const trackPadding = () => {
+    const cs = getComputedStyle(scrollbar);
+    return parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+  };
+
   function updateScrollbar() {
-    const trackH = scrollbar.clientHeight - 8; // padding 4 + 4
+    const trackH = scrollbar.clientHeight - trackPadding();
     const ratio = scroll.clientHeight / scroll.scrollHeight;
     const thumbH = Math.max(40, Math.round(trackH * Math.min(1, ratio)));
     const maxScroll = scroll.scrollHeight - scroll.clientHeight;
@@ -168,7 +165,7 @@
   });
   thumb.addEventListener("pointermove", (e) => {
     if (!drag) return;
-    const trackH = scrollbar.clientHeight - 8 - thumb.offsetHeight;
+    const trackH = scrollbar.clientHeight - trackPadding() - thumb.offsetHeight;
     const maxScroll = scroll.scrollHeight - scroll.clientHeight;
     scroll.scrollTop = drag.top + ((e.clientY - drag.y) / trackH) * maxScroll;
   });
@@ -274,15 +271,18 @@
   /* ---------- Alto del visor ajustado a la ventana ---------- */
 
   // El visor ocupa el alto disponible para que los botones de acción queden
-  // siempre visibles sin scrollear la página (máximo: alto de una página del diseño).
-  const VIEWPORT_MAX = 686;
+  // siempre visibles sin scrollear la página. Máximo: una página completa al 100 %
+  // (686 px en desktop, ~406 px en mobile), para que la siguiente no asome al cargar.
   const VIEWPORT_MIN = 240;
   function fitToWindow() {
     const root = document.documentElement;
     const current = scroll.clientHeight;
     const chrome = document.body.scrollHeight - current; // todo lo que no es el visor
     const available = window.innerHeight - chrome;
-    const h = Math.max(VIEWPORT_MIN, Math.min(VIEWPORT_MAX, available));
+    const cs = getComputedStyle(scroll);
+    const zoom = parseFloat(scroll.style.getPropertyValue("--zoom")) || 1;
+    const onePage = pages[0].offsetHeight / zoom + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const h = Math.max(VIEWPORT_MIN, Math.min(Math.floor(onePage), available));
     root.style.setProperty("--viewport-h", `${h}px`);
   }
 
