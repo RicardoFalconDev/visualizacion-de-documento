@@ -117,20 +117,15 @@ button { font: inherit; }
 .progress[data-state="completo"] .progress__icon--check { display: block; margin: -4px -2px -4px -6px; }
 .progress[data-state="completo"] .progress__count { color: var(--color-text-default); }
 
+/* Barra continua: se llena con el scroll del documento completo (--fill de 0 a 1) */
 .progress__bar {
-  display: flex;
-  gap: 4px;
-  height: 4px;
-}
-.progress__segment {
   position: relative;
-  flex: 1;
+  height: 4px;
   overflow: hidden;
   border-radius: 2px;
   background: var(--color-bg-subtle);
 }
-.progress[data-state="en-progreso"] .progress__segment { background: var(--color-stroke-viewer); }
-/* Relleno gradual según el avance dentro de la página (--fill de 0 a 1) */
+.progress[data-state="en-progreso"] .progress__bar { background: var(--color-stroke-viewer); }
 .progress__fill {
   position: absolute;
   inset: 0;
@@ -139,8 +134,8 @@ button { font: inherit; }
   transform-origin: left center;
   transition: transform .12s linear;
 }
-/* Al contar la página como revisada, el segmento termina de llenarse */
-.progress__segment.is-done .progress__fill {
+/* Al completar la lectura la barra termina de llenarse */
+.progress[data-state="completo"] .progress__fill {
   transform: scaleX(1);
   transition: transform .3s ease-out;
 }

@@ -4,7 +4,7 @@ Prototipo del visor de documentos de FID: la persona tiene que recorrer todas la
 
 ## Qué incluye
 
-- **Indicador de progreso de lectura:** un segmento por página que se llena de forma gradual con el scroll y un contador ("1 de 2 páginas").
+- **Indicador de progreso de lectura:** una barra continua que se llena de forma gradual con el scroll y un contador por página ("1 de 2 páginas").
 - **Botón "Firmar documento" bloqueado** hasta completar la lectura. Con hover, foco o click muestra un tooltip que explica qué falta.
 - **Chip "Ir al final del documento"** con scroll suave.
 - **Zoom** de 50 % a 200 % que no reinicia el progreso.

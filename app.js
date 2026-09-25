@@ -2,9 +2,9 @@
  * Visor "Revisá el documento" — lectura requerida antes de firmar.
  *
  * Comportamiento (según las notas del diseño en Figma):
- * - Un segmento del indicador por página, que se llena con el scroll según la parte
- *   del recorrido que le toca a esa página. Al completarse, la página cuenta como
- *   revisada; la última, al llegar al final. El progreso nunca retrocede.
+ * - Barra continua que se llena con el scroll del documento completo. Cada página
+ *   ocupa su parte del recorrido; al pasarla, cuenta como revisada (la última, al
+ *   llegar al final) y suma al contador. El progreso nunca retrocede.
  * - Si el documento entra completo en pantalla al cargar, se marca como revisado.
  * - Chip "Ir al final del documento": scroll suave hasta el final; se oculta al completar.
  * - "Firmar documento" usa aria-disabled hasta completar la lectura. Hover, foco o
@@ -53,22 +53,15 @@
 
   /* ---------- Indicador de progreso ---------- */
 
-  const segments = pages.map((_, i) => {
-    const seg = document.createElement("span");
-    seg.className = "progress__segment";
-    seg.dataset.page = i + 1;
-    const fill = document.createElement("span");
-    fill.className = "progress__fill";
-    seg.appendChild(fill);
-    progressBar.appendChild(seg);
-    return seg;
-  });
-  // Avance parcial de cada página (0 a 1). Solo crece: nunca retrocede.
-  const pageFill = pages.map(() => 0);
+  const fill = document.createElement("span");
+  fill.className = "progress__fill";
+  progressBar.appendChild(fill);
+  // Avance total de lectura (0 a 1). Solo crece: nunca retrocede.
+  let readProgress = 0;
 
-  function setFill(i, value) {
-    pageFill[i] = Math.max(pageFill[i], Math.min(1, value));
-    segments[i].style.setProperty("--fill", pageFill[i]);
+  function setProgress(value) {
+    readProgress = Math.max(readProgress, Math.min(1, value));
+    progressBar.style.setProperty("--fill", readProgress);
   }
 
   function renderProgress() {
@@ -77,10 +70,7 @@
     const state = done === 0 ? "sin-leer" : missing === 0 ? "completo" : "en-progreso";
     progress.dataset.state = state;
 
-    segments.forEach((seg, i) => {
-      seg.classList.toggle("is-done", reviewed.has(i + 1));
-      if (reviewed.has(i + 1)) setFill(i, 1);
-    });
+    if (state === "completo") setProgress(1);
     progressCount.textContent = `${done} de ${total} ${plural(total, "página", "páginas")}`;
 
     if (state === "sin-leer") {
@@ -113,11 +103,10 @@
 
   /* ---------- Seguimiento de lectura ---------- */
 
-  // Cada segmento representa la parte del recorrido total que le corresponde a su
-  // página (según su alto): con 2 páginas, la 1 se llena del 0 al 50 % del scroll
-  // y la 2 del 50 al 100 %. La página cuenta como revisada cuando su segmento se
-  // completa, así la barra y el contador nunca se contradicen, sin importar el alto
-  // del visor ni el zoom.
+  // La barra refleja el avance del scroll sobre el documento completo. Cada página
+  // ocupa la parte del recorrido que le corresponde según su alto (con 2 páginas,
+  // la 1 va del 0 al 50 % y la 2 del 50 al 100 %) y cuenta como revisada cuando la
+  // barra pasa su tramo, así barra y contador nunca se contradicen.
   function checkReviewed() {
     const maxScroll = scroll.scrollHeight - scroll.clientHeight;
     // Documento que entra completo en pantalla: se marca como revisado de inmediato
@@ -129,11 +118,11 @@
     const progressTotal = atEnd ? 1 : scroll.scrollTop / maxScroll;
     const heights = pages.map((page) => page.offsetHeight);
     const totalH = heights.reduce((a, b) => a + b, 0);
-    let before = 0;
+    setProgress(progressTotal);
+    let upTo = 0;
     heights.forEach((h, i) => {
-      setFill(i, (progressTotal * totalH - before) / h);
-      if (pageFill[i] >= 1) markReviewed(i + 1);
-      before += h;
+      upTo += h;
+      if (readProgress * totalH >= upTo - 0.5) markReviewed(i + 1);
     });
   }
 
